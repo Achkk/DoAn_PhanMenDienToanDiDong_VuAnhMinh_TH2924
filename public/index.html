@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChatApp</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --bg-color: #2b2b30;
+        --sidebar-bg: #222226;
+        --chat-bg: #2b2b30;
+        --text-color: #f0f0f0;
+        --accent-color: #0084ff; /* Xanh Zalo/Messenger */
+        --message-self-bg: #0084ff;
+        --message-other-bg: #3c3c43;
+        --border-color: #38383e;
+        --unread-color: #ff3b30; /* Đỏ thông báo Zalo */
+      }
+
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+      }
+      .app-container {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        width: 100%;
+        height: 100%;
+      }
+
+      /* SIDEBAR */
+      .sidebar {
+        background-color: var(--sidebar-bg);
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--border-color);
+      }
+      .sidebar-header {
+        padding: 20px;
+        font-size: 22px;
+        font-weight: bold;
+        color: white;
+        padding-bottom: 10px;
+      }
+      .user-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0 15px;
+      }
+
+      .user-item {
+        display: flex;
+        padding: 15px 0;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border-color);
+        transition: 0.2s;
+        align-items: center;
+      }
+      .user-item:hover {
+        opacity: 0.8;
+      }
+      .user-item.active {
+        background-color: #2b2b30;
+        border-radius: 8px;
+        padding: 15px 10px;
+        border-bottom: none;
+      }
+
+      .user-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        color: white;
+        margin-right: 15px;
+      }
+      .avatar-1 {
+        background-color: #6c5ce7;
+      }
+      .avatar-2 {
+        background-color: #00b894;
+      }
+
+      .user-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .user-name {
+        font-weight: bold;
+        font-size: 16px;
+        color: #fff;
+        margin-bottom: 5px;
+      }
+      .last-message {
+        font-size: 13px;
+        color: #a0a0a0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .user-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: flex-start;
+        min-width: 60px;
+      }
+      .time-text {
+        font-size: 11px;
+        color: #a0a0a0;
+        margin-bottom: 5px;
+      }
+
+      /* Huy hiệu tin nhắn chưa đọc */
+      .unread-badge {
+        background-color: var(--unread-color);
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+        border-radius: 50%;
+        min-width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        box-sizing: border-box;
+      }
+
+      /* KHUNG CHAT */
+      .chat-area {
+        display: flex;
+        flex-direction: column;
+        background-color: var(--chat-bg);
+      }
+      .chat-header {
+        padding: 15px 25px;
+        background-color: var(--sidebar-bg);
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .chat-header-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .messages {
+        flex: 1;
+        padding: 25px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .message {
+        padding: 10px 16px;
+        border-radius: 18px;
+        max-width: 65%;
+        word-wrap: break-word;
+        font-size: 15px;
+      }
+      .message.self {
+        background-color: var(--message-self-bg);
+        align-self: flex-end;
+        color: white;
+        border-bottom-right-radius: 4px;
+      }
+      .message.other {
+        background-color: var(--message-other-bg);
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+      }
+      .message-time {
+        font-size: 11px;
+        opacity: 0.7;
+        margin-top: 5px;
+        display: block;
+        text-align: right;
+      }
+
+      .input-area {
+        padding: 20px;
+        background-color: var(--sidebar-bg);
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      #msgInput {
+        flex: 1;
+        background-color: #38383e;
+        border: none;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 25px;
+        outline: none;
+        font-size: 15px;
+      }
+      #sendBtn {
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 0.2s;
+        font-size: 16px;
+      }
+
+      .no-chat {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        opacity: 0.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="sidebar">
+        <div class="sidebar-header">Chat Đồ Án</div>
+        <div class="user-list">
+          <div
+            class="user-item"
+            id="item-Người-số-1"
+            onclick="selectUser('Người số 1')"
+          >
+            <div class="user-avatar avatar-1"><i class="fas fa-user"></i></div>
+            <div class="user-info">
+              <div class="user-name">Người số 1</div>
+              <div class="last-message" id="last-msg-Người-số-1">
+                Chưa có tin nhắn...
+              </div>
+            </div>
+            <div class="user-meta">
+              <div class="time-text" id="time-Người-số-1"></div>
+              <div
+                class="unread-badge"
+                id="badge-Người-số-1"
+                style="display: none"
+              >
+                0
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="user-item"
+            id="item-Người-số-2"
+            onclick="selectUser('Người số 2')"
+          >
+            <div class="user-avatar avatar-2"><i class="fas fa-user"></i></div>
+            <div class="user-info">
+              <div class="user-name">Người số 2</div>
+              <div class="last-message" id="last-msg-Người-số-2">
+                Chưa có tin nhắn...
+              </div>
+            </div>
+            <div class="user-meta">
+              <div class="time-text" id="time-Người-số-2"></div>
+              <div
+                class="unread-badge"
+                id="badge-Người-số-2"
+                style="display: none"
+              >
+                0
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-area" id="noChatArea">
+        <div class="no-chat">
+          <i
+            class="fas fa-comments"
+            style="font-size: 80px; margin-bottom: 20px"
+          ></i>
+          <h3>Chọn đoạn chat để bắt đầu</h3>
+        </div>
+      </div>
+
+      <div class="chat-area" id="chatArea" style="display: none">
+        <div class="chat-header">
+          <div class="chat-header-info">
+            <div class="user-avatar" id="headerAvatar">?</div>
+            <div id="headerName" style="font-weight: bold; font-size: 18px">
+              Tên
+            </div>
+          </div>
+          <div style="opacity: 0.6">
+            <i class="fas fa-video"></i> &nbsp;&nbsp;
+            <i class="fas fa-phone"></i>
+          </div>
+        </div>
+
+        <div class="messages" id="msgs"></div>
+
+        <div class="input-area">
+          <input
+            type="text"
+            id="msgInput"
+            placeholder="Nhập tin nhắn..."
+            autocomplete="off"
+          />
+          <button id="sendBtn" onclick="sendMessage()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let myName = "";
+      let currentChatPartner = "";
+
+      // Các biến dùng để đếm tin nhắn ngầm
+      let allMessages = [];
+      let knownMessageCount = 0;
+      let unreadCounts = { "Người số 1": 0, "Người số 2": 0 };
+      let isFirstLoad = true;
+
+      // Chọn người để chat
+      function selectUser(partnerName) {
+        currentChatPartner = partnerName;
+
+        // Logic tự động: Chọn Người 1 thì mình là Người 2, và ngược lại
+        if (partnerName === "Người số 1") {
+          myName = "Người số 2";
+          document.getElementById("headerAvatar").className =
+            "user-avatar avatar-1";
+        } else {
+          myName = "Người số 1";
+          document.getElementById("headerAvatar").className =
+            "user-avatar avatar-2";
+        }
+        document.getElementById("headerAvatar").innerHTML =
+          '<i class="fas fa-user"></i>';
+
+        // Xóa chấm đỏ thông báo khi đã bấm vào xem
+        unreadCounts[partnerName] = 0;
+        updateSidebarUI();
+
+        // Chuyển đổi giao diện sang khung chat
+        document.getElementById("noChatArea").style.display = "none";
+        document.getElementById("chatArea").style.display = "flex";
+        document.getElementById("headerName").innerText = partnerName;
+
+        // Cập nhật css viền đậm
+        document.getElementById("item-Người-số-1").classList.remove("active");
+        document.getElementById("item-Người-số-2").classList.remove("active");
+        if (partnerName === "Người số 1")
+          document.getElementById("item-Người-số-1").classList.add("active");
+        if (partnerName === "Người số 2")
+          document.getElementById("item-Người-số-2").classList.add("active");
+
+        renderChatBox();
+      }
+
+      // Hàm gọi API lấy dữ liệu liên tục (1 giây / lần)
+      async function fetchMessagesGlobal() {
+        try {
+          const response = await fetch(`/api/messages/Người số 1/Người số 2`);
+          const messages = await response.json();
+          allMessages = messages;
+
+          // Lần đầu tiên mở web -> Không hiện thông báo đỏ cho tin nhắn cũ
+          if (isFirstLoad) {
+            knownMessageCount = messages.length;
+            isFirstLoad = false;
+            updateSidebarUI();
+            return;
+          }
+
+          // Nếu phát hiện có tin nhắn MỚI thêm vào database
+          if (messages.length > knownMessageCount) {
+            for (let i = knownMessageCount; i < messages.length; i++) {
+              let msg = messages[i];
+              // Nếu người gửi KHÔNG PHẢI là mình VÀ mình đang KHÔNG xem chat của họ -> Tăng chấm đỏ
+              if (msg.Sender !== myName && msg.Sender !== currentChatPartner) {
+                unreadCounts[msg.Sender] = (unreadCounts[msg.Sender] || 0) + 1;
+              }
+            }
+            knownMessageCount = messages.length;
+
+            updateSidebarUI(); // Cập nhật chữ ngoài sidebar
+            if (currentChatPartner) renderChatBox(); // Nếu đang mở chat thì cuộn tin nhắn
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      // Cập nhật chữ, thời gian và chấm đỏ ngoài Sidebar
+      function updateSidebarUI() {
+        if (allMessages.length > 0) {
+          let lastMsg = allMessages[allMessages.length - 1];
+          let timeStr = new Date(lastMsg.Timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          // Xử lý hiện "Bạn:" nếu mình là người gửi cuối cùng
+          let prefix =
+            myName !== "" && lastMsg.Sender === myName ? "Bạn: " : "";
+          let contentStr = prefix + lastMsg.Content;
+
+          // Cập nhật cho cả 2 dòng (vì chung 1 phòng chat 1-v-1)
+          document.getElementById("last-msg-Người-số-1").innerText = contentStr;
+          document.getElementById("time-Người-số-1").innerText = timeStr;
+
+          document.getElementById("last-msg-Người-số-2").innerText = contentStr;
+          document.getElementById("time-Người-số-2").innerText = timeStr;
+        }
+
+        // Hiện/Ẩn chấm đỏ Người số 1
+        let badge1 = document.getElementById("badge-Người-số-1");
+        if (unreadCounts["Người số 1"] > 0) {
+          badge1.style.display = "flex";
+          badge1.innerText = unreadCounts["Người số 1"];
+        } else {
+          badge1.style.display = "none";
+        }
+
+        // Hiện/Ẩn chấm đỏ Người số 2
+        let badge2 = document.getElementById("badge-Người-số-2");
+        if (unreadCounts["Người số 2"] > 0) {
+          badge2.style.display = "flex";
+          badge2.innerText = unreadCounts["Người số 2"];
+        } else {
+          badge2.style.display = "none";
+        }
+      }
+
+      // Đổ tin nhắn vào khung chat chính
+      function renderChatBox() {
+        const box = document.getElementById("msgs");
+        box.innerHTML = allMessages
+          .map((msg) => {
+            const isSelf = msg.Sender === myName;
+            return `
+                <div class="message ${isSelf ? "self" : "other"}">
+                    ${msg.Content}
+                    <span class="message-time">${new Date(msg.Timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                </div>
+            `;
+          })
+          .join("");
+        box.scrollTop = box.scrollHeight;
+      }
+
+      // Hàm gửi tin
+      async function sendMessage() {
+        const input = document.getElementById("msgInput");
+        const content = input.value.trim();
+        if (!content || !currentChatPartner) return;
+
+        try {
+          await fetch("/api/messages", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sender: myName,
+              receiver: currentChatPartner,
+              content: content,
+            }),
+          });
+          input.value = "";
+          fetchMessagesGlobal();
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      document.getElementById("msgInput").addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendMessage();
+      });
+
+      // Chạy ngầm mỗi 1 giây
+      setInterval(fetchMessagesGlobal, 1000);
+    </script>
+  </body>
+</html>
