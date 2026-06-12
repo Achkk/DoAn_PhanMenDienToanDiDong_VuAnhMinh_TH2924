@@ -9,9 +9,9 @@ const port = 3000;
 // Cấu hình Database
 const dbConfig = {
   user: "sa",
-  password: "Anhminh178@", // <--- NHỚ ĐIỀN LẠI MẬT KHẨU VÀO ĐÂY
+  password: "Anhminh178@",
   server: "localhost",
-  database: "ChatDB", // Nếu lúc nãy bạn dùng ChatAppDB thì đổi lại nhé
+  database: "ChatDB",
   options: {
     instanceName: "SQLEXPRESS01",
     encrypt: false,
